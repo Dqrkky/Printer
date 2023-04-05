@@ -1,4 +1,4 @@
-import requests, xmltodict, base64
+import requests, json, xmltodict, base64
 
 def req(js0n: dict=None, r=None):
     if js0n != None and isinstance(js0n, dict) and len(js0n) > 0:
@@ -66,7 +66,10 @@ class HP044C0C:
         }
         if username != None and isinstance(username, str) and password != None and isinstance(password, str):
             self.config["headers"]["Authorization"] = f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
-    def Scan(self):
+    def authcheck(self):
+        #https://192.168.1.3/AuthChk
+        pass
+    def scan(self):
         req(
             js0n={
                 "method": "post",
@@ -118,6 +121,65 @@ class HP044C0C:
             if data2 != None and isinstance(data2, dict):
                 if "scan:ScannerStatus" in data2 and data2["scan:ScannerStatus"] != None and isinstance(data2["scan:ScannerStatus"], dict) and "scan:Jobs" in data2["scan:ScannerStatus"] and data2["scan:ScannerStatus"]["scan:Jobs"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"], dict) and "scan:JobInfo" in data2["scan:ScannerStatus"]["scan:Jobs"] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"], list) and len(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"]) > 0 and "pwg:JobUuid" in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"], str):
                     return f'{self.config["host"]}/eSCL/ScanJobs/{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"]}/NextDocument'
+    def getconfigurationconstraints(self):
+        return req(
+            js0n={
+                "method": "get",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints',
+                "aftermethod": "json"
+            },
+            r=self.rss
+        )
+    def getconfiguration(self):
+        return req(
+            js0n={
+                "method": "get",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                "aftermethod": "json"
+            },
+            r=self.rss
+        )
+    def setconfiguration(self):
+        req(
+            js0n={
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                "data": json.dumps(
+                    {
+                        "deviceLanguage": "en",
+                        "displayContrast": 80,
+                        "keyPressVolume": "soft",
+                        "version": "1.0.0."
+                    }
+                ),
+                "aftermethod": "re"
+            },
+            r=self.rss
+        )
+    def getprintmodeconfiguration(self):
+        return req(
+            js0n={
+                "method": "get",
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                "aftermethod": "json"
+            },
+            r=self.rss
+        )
+    def setprintmodeconfiguration(self):
+        req(
+            js0n={
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                "data": json.dumps(
+                    obj={
+                        "quietPrintModeEnabled": False,
+                        "version": "1.0.0"
+                    }
+                ),
+                    "aftermethod": "re"
+            },
+            r=self.rss
+        )
 
 class Scan:
     def __init__(self):
