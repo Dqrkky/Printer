@@ -122,7 +122,7 @@ class HP044C0C:
                 if "scan:ScannerStatus" in data2 and data2["scan:ScannerStatus"] != None and isinstance(data2["scan:ScannerStatus"], dict) and "scan:Jobs" in data2["scan:ScannerStatus"] and data2["scan:ScannerStatus"]["scan:Jobs"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"], dict) and "scan:JobInfo" in data2["scan:ScannerStatus"]["scan:Jobs"] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"], list) and len(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"]) > 0 and "pwg:JobUuid" in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"], str):
                     return f'{self.config["host"]}/eSCL/ScanJobs/{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"]}/NextDocument'
     def getconfigurationconstraints(self):
-        return req(
+        data = req(
             js0n={
                 "method": "get",
                 "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints',
@@ -130,6 +130,16 @@ class HP044C0C:
             },
             r=self.rss
         )
+        if data != None and isinstance(data, dict):
+            dummy = {
+                "version": None,
+                "validators": None
+            }
+            if "version" in data and data["version"] != None and isinstance(data["version"], str):
+                dummy["version"] = data["version"]
+            if "validators" in data and data["validators"] != None and isinstance(data["validators"], list) and len(data["validators"]):
+                dummy["validators"] = [{b: validator[b][1:] if validator[b] != None and isinstance(validator[b], str) and validator[b].startswith("/") else validator[b] for b in validator} for validator in data["validators"] if validator != None and isinstance(validator, dict)]
+            return dummy
     def getconfiguration(self):
         return req(
             js0n={
@@ -139,7 +149,7 @@ class HP044C0C:
             },
             r=self.rss
         )
-    def setconfiguration(self):
+    def setconfiguration(self, deviceLanguage :str=None, displayContrast :str=None):
         req(
             js0n={
                 "method": "put",
