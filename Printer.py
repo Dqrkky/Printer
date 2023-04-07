@@ -122,6 +122,7 @@ class HP044C0C:
                 if "scan:ScannerStatus" in data2 and data2["scan:ScannerStatus"] != None and isinstance(data2["scan:ScannerStatus"], dict) and "scan:Jobs" in data2["scan:ScannerStatus"] and data2["scan:ScannerStatus"]["scan:Jobs"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"], dict) and "scan:JobInfo" in data2["scan:ScannerStatus"]["scan:Jobs"] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"], list) and len(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"]) > 0 and "pwg:JobUuid" in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"], str):
                     return f'{self.config["host"]}/eSCL/ScanJobs/{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"]}/NextDocument'
     def getconfigurationconstraints(self):
+        #needs fixing (filter data and put em in order)
         data = req(
             js0n={
                 "method": "get",
@@ -149,23 +150,26 @@ class HP044C0C:
             },
             r=self.rss
         )
-    def setconfiguration(self, deviceLanguage :str=None, displayContrast :str=None):
-        req(
-            js0n={
-                "method": "put",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                "data": json.dumps(
-                    {
-                        "deviceLanguage": "en",
-                        "displayContrast": 80,
-                        "keyPressVolume": "soft",
-                        "version": "1.0.0."
-                    }
-                ),
-                "aftermethod": "re"
-            },
-            r=self.rss
-        )
+    def setconfiguration(self, deviceLanguage :str=None, displayContrast :int=None, keyPressVolume :str=None, version :str=None):
+        #need fixing (check for valid parameters)
+        if deviceLanguage != None and isinstance(deviceLanguage, str) and displayContrast != None and isinstance(displayContrast, int) and keyPressVolume != None and isinstance(keyPressVolume, str) and version != None and isinstance(version, str):
+            data = req(
+                js0n={
+                    "method": "put",
+                    "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                    "data": json.dumps(
+                        {
+                            "deviceLanguage": deviceLanguage,
+                            "displayContrast": displayContrast,
+                            "keyPressVolume": keyPressVolume,
+                            "version": version
+                        }
+                    ),
+                    "aftermethod": "re"
+                },
+                r=self.rss
+            )
+            return data.status_code
     def getprintmodeconfiguration(self):
         return req(
             js0n={
@@ -175,21 +179,24 @@ class HP044C0C:
             },
             r=self.rss
         )
-    def setprintmodeconfiguration(self):
-        req(
-            js0n={
-                "method": "put",
-                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                "data": json.dumps(
-                    obj={
-                        "quietPrintModeEnabled": False,
-                        "version": "1.0.0"
-                    }
-                ),
-                    "aftermethod": "re"
-            },
-            r=self.rss
-        )
+    def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
+        #need fixing (check for valid parameters)
+        if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) and version != None and isinstance(version, str):
+            data = req(
+                js0n={
+                    "method": "put",
+                    "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                    "data": json.dumps(
+                        obj={
+                            "quietPrintModeEnabled": False,
+                            "version": version
+                        }
+                    ),
+                        "aftermethod": "re"
+                },
+                r=self.rss
+            )
+            return data.status_code
 
 class Scan:
     def __init__(self):
