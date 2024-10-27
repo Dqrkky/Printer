@@ -23,52 +23,44 @@ class HP044C0C:
         #https://192.168.1.3/AuthChk
         pass
     def scan(self):
-        req(
-            js0n={
-                "method": "post",
-                "url": f'{self.config["host"]}/eSCL/ScanJobs',
-                "data": xmltodict.unparse(
-                    {
-                        'scan:ScanSettings': {
-                            '@xmlns:scan': 'http://schemas.hp.com/imaging/escl/2011/05/03',
-                            '@xmlns:copy': 'http://www.hp.com/schemas/imaging/con/copy/2008/07/07',
-                            '@xmlns:dd': 'http://www.hp.com/schemas/imaging/con/dictionaries/1.0/',
-                            '@xmlns:dd3': 'http://www.hp.com/schemas/imaging/con/dictionaries/2009/04/06',
-                            '@xmlns:fw': 'http://www.hp.com/schemas/imaging/con/firewall/2011/01/05',
-                            '@xmlns:scc': 'http://schemas.hp.com/imaging/escl/2011/05/03',
-                            '@xmlns:pwg': 'http://www.pwg.org/schemas/2010/12/sm',
-                            'pwg:Version': '2.1',
-                            'scan:Intent': 'Photo',
-                            'pwg:ScanRegions': {
-                                'pwg:ScanRegion': {
-                                    'pwg:Height': '3507',
-                                    'pwg:Width': '2481',
-                                    'pwg:XOffset': '0',
-                                    'pwg:YOffset': '0'
-                                }
-                            },
-                            'scan:DocumentFormatExt': 'image/jpeg',
-                            'scan:XResolution': '600',
-                            'scan:YResolution': '600',
-                            'scan:ColorMode': 'RGB24',
-                            'scan:CompressionFactor': '0',
-                            'scan:Brightness': '1000',
-                            'scan:Contrast': '1000'
-                        }
+        config = {
+            "method": "post",
+            "url": f'{self.config["host"]}/eSCL/ScanJobs',
+            "data": xmltodict.unparse(
+                {
+                    'scan:ScanSettings': {
+                        '@xmlns:scan': 'http://schemas.hp.com/imaging/escl/2011/05/03',
+                        '@xmlns:copy': 'http://www.hp.com/schemas/imaging/con/copy/2008/07/07',
+                        '@xmlns:dd': 'http://www.hp.com/schemas/imaging/con/dictionaries/1.0/',
+                        '@xmlns:dd3': 'http://www.hp.com/schemas/imaging/con/dictionaries/2009/04/06',
+                        '@xmlns:fw': 'http://www.hp.com/schemas/imaging/con/firewall/2011/01/05',
+                        '@xmlns:scc': 'http://schemas.hp.com/imaging/escl/2011/05/03',
+                        '@xmlns:pwg': 'http://www.pwg.org/schemas/2010/12/sm',
+                        'pwg:Version': '2.1',
+                        'scan:Intent': 'Photo',
+                        'pwg:ScanRegions': {
+                            'pwg:ScanRegion': {
+                                'pwg:Height': '3507',
+                                'pwg:Width': '2481',
+                                'pwg:XOffset': '0',
+                                'pwg:YOffset': '0'
+                            }
+                        },
+                        'scan:DocumentFormatExt': 'image/jpeg',
+                        'scan:XResolution': '600',
+                        'scan:YResolution': '600',
+                        'scan:ColorMode': 'RGB24',
+                        'scan:CompressionFactor': '0',
+                        'scan:Brightness': '1000',
+                        'scan:Contrast': '1000'
                     }
-                ),
-                "aftermethod": "re"
-            },
-            r=self.rss
-        )
-        data1 = req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/eSCL/ScannerStatus',
-                "aftermethod": "text"
-            },
-            r=self.rss
-        )
+                }
+            )
+        }
+        config1 = {
+            "method": "get",
+            "url": f'{self.config["host"]}/eSCL/ScannerStatus'
+        }
         if data1 != None and isinstance(data1, str):
             data2 = xmltodict.parse(xml_input=data1)
             if data2 != None and isinstance(data2, dict):
@@ -76,96 +68,68 @@ class HP044C0C:
                     return f'{self.config["host"]}/eSCL/ScanJobs/{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"]}/NextDocument'
     def getconfigurationconstraints(self):
         #needs fixing (filter data and put em in order)
-        data = req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
+        config = {
+            "method": "get",
+            "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints'
+        }
         if data != None and isinstance(data, dict):
-            dummy = {
-                "version": None,
-                "validators": None
-            }
-            if "version" in data and data["version"] != None and isinstance(data["version"], str):
-                dummy["version"] = data["version"]
-            if "validators" in data and data["validators"] != None and isinstance(data["validators"], list) and len(data["validators"]):
-                dummy["validators"] = [{b: validator[b][1:] if validator[b] != None and isinstance(validator[b], str) and validator[b].startswith("/") else validator[b] for b in validator} for validator in data["validators"] if validator != None and isinstance(validator, dict)]
-            return dummy
+            return data
     def getconfiguration(self):
-        return req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
+        config = {
+            "method": "get",
+            "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration'
+        }
     def setconfiguration(self, deviceLanguage :str=None, displayContrast :int=None, keyPressVolume :str=None, version :str=None):
         #need fixing (check for valid parameters)
         if deviceLanguage != None and isinstance(deviceLanguage, str) and displayContrast != None and isinstance(displayContrast, int) and keyPressVolume != None and isinstance(keyPressVolume, str) and version != None and isinstance(version, str):
-            data = req(
-                js0n={
-                    "method": "put",
-                    "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                    "data": json.dumps(
-                        {
-                            "deviceLanguage": deviceLanguage,
-                            "displayContrast": displayContrast,
-                            "keyPressVolume": keyPressVolume,
-                            "version": version
-                        }
-                    ),
-                    "aftermethod": "re"
-                },
-                r=self.rss
-            )
-            return data.status_code
+            config = {
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                "data": json.dumps(
+                    {
+                        "deviceLanguage": deviceLanguage,
+                        "displayContrast": displayContrast,
+                        "keyPressVolume": keyPressVolume,
+                        "version": version
+                    }
+                )
+            }
     def getprintmodeconfiguration(self):
-        return req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
+        config = {
+            "method": "get",
+            "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration'
+        }
     def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
         #need fixing (check for valid parameters)
         if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) and version != None and isinstance(version, str):
-            data = req(
-                js0n={
-                    "method": "put",
-                    "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                    "data": json.dumps(
-                        obj={
-                            "quietPrintModeEnabled": False,
-                            "version": version
-                        }
-                    ),
-                        "aftermethod": "re"
-                },
-                r=self.rss
-            )
-            return data.status_code
+            config = {
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                "data": json.dumps(
+                    obj={
+                        "quietPrintModeEnabled": False,
+                        "version": version
+                    }
+                ),
+                    "aftermethod": "re"
+            }
 
 class Scan:
     def __init__(self):
         with requests.Session() as rss:
             self.rss = rss
-        self.rss.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52"
+        self.config = {
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52"
+            }
+        }
+        self.rss.headers.update(self.config.headers)
     def save(self, url :str=None):
         if url != None and isinstance(url, str):
-            data1 = req(
-                js0n={
-                    "method": "get",
-                    "url": url,
-                    "aftermethod": "re"
-                },
-                r=self.rss
-            )
+            config = {
+                "method": "get",
+                "url": url
+            }
             if data1 != None and "Content-Type" in data1.headers and data1.headers["Content-Type"] != None and isinstance(data1.headers["Content-Type"], str):
                 file_name = url.split("/")[-1]
                 file_type = data1.headers["Content-Type"].split("/")[1]
