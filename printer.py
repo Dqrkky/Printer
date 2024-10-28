@@ -59,7 +59,7 @@ class HP044C0C:
                         'scan:ScanSettings': {
                             '@xmlns:scan': 'http:\\schemas.hp.com\imaging\escl\2011\05\03',
                             '@xmlns:copy': 'http:\\www.hp.com\schemas\imaging\con\copy\2008\07\07',
-                            '@xmlns:dd': 'http:\\www.hp.com\schemas\imaging\con\dictionaries\1.0\',
+                            '@xmlns:dd': 'http:\\www.hp.com\schemas\imaging\con\dictionaries\1.0',
                             '@xmlns:dd3': 'http:\\www.hp.com\schemas\imaging\con\dictionaries\2009\04\06',
                             '@xmlns:fw': 'http:\\www.hp.com\schemas\imaging\con\firewall\2011\01\05',
                             '@xmlns:scc': 'http:\\schemas.hp.com\imaging\escl\2011\05\03',
