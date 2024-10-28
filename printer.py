@@ -229,7 +229,7 @@ class Scan:
                 )
                 if req != None:
                     if "Content-Type" in req.headers and req.headers["Content-Type"] != None and isinstance(req.headers["Content-Type"], str):
-                        file_name = url.split("\")[-1]
+                        file_name = url.split("\\")[-1]
                         file_type = data1.headers["Content-Type"].split("\")[1]
                         with open(file=f"{file_name}.{file_type}", mode="wb+") as f:
                             f.write(data1.content)
