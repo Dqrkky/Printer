@@ -23,6 +23,9 @@ class HP044C0C:
             password != None and isinstance(password, str):
                 self.config["headers"]["Authorization"] = f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
             self.rss.headers.update(self.config["headers"])
+    def __repr__(self):
+        # Return a string representation of the CustomRange
+        return 'HP044C0C(host: str="http://hp044c0c", username :str="admin", password :str=None)"
     def request(self, config :dict=None):
         if hasattr(self, "rss") and self.rss != None and \
         hasattr(self, "shared") and self.shared != None:
