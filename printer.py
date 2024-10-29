@@ -13,7 +13,7 @@ class HP044C0C:
         self.config = {
             "host": host,
             "headers": {
-                "User-Agent": "Mozilla\5.0 p(Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52"
+                "User-Agent": "Mozilla\5.0 p(Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52".encode("utf-8").decode("latin-1", errors="ignore")
             }
         }
         if hasattr(self, "rss") and self.rss != None and \
@@ -199,7 +199,7 @@ class Scan:
         )
         self.config = {
             "headers": {
-                "User-Agent": "Mozilla\5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52"
+                "User-Agent": "Mozilla\5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52".encode("utf-8").decode("latin-1", errors="ignore")
             }
         }
         if hasattr(self, "rss") and self.rss != None and \
