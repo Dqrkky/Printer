@@ -2,9 +2,10 @@ import requests
 import json
 import xmltodict
 import base64
+import shared
 
 class HP044C0C:
-    def __init__(self, host: str="http:\\hp044c0c", username :str="admin", password :str=None):
+    def __init__(self, host: str="http://hp044c0c", username :str="admin", password :str=None):
         with requests.Session() as rss:
             self.rss = rss
         self.shared = shared.Shared(
@@ -13,7 +14,7 @@ class HP044C0C:
         self.config = {
             "host": host,
             "headers": {
-                "User-Agent": "Mozilla\5.0 p(Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52".encode("utf-8").decode("latin-1", errors="ignore")
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240" 
             }
         }
         if hasattr(self, "rss") and self.rss != None and \
@@ -24,8 +25,8 @@ class HP044C0C:
                 self.config["headers"]["Authorization"] = f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
             self.rss.headers.update(self.config["headers"])
     def __repr__(self):
-        # Return a string representation of the CustomRange
-        return 'HP044C0C(host: str="http://hp044c0c", username :str="admin", password :str=None)"
+        # Return a string representation of the HP044C0C
+        return 'HP044C0C(host: str="http://hp044c0c", username :str="admin", password :str=None)'
     def request(self, config :dict=None):
         if hasattr(self, "rss") and self.rss != None and \
         hasattr(self, "shared") and self.shared != None:
@@ -35,15 +36,14 @@ class HP044C0C:
                         config=config
                     )
                 )
-                if req.status_code == 200:
-                    return req
+                return req
     def authcheck(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
-                "url": f'{self.config["host"]}\AuthChk'
+                "url": f'{self.config["host"]}/AuthChk'
             }
             req = self.request(
                 config=config
@@ -56,17 +56,17 @@ class HP044C0C:
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "post",
-                "url": f'{self.config["host"]}\eSCL\ScanJobs',
+                "url": f'{self.config["host"]}/eSCL/ScanJobs',
                 "data": xmltodict.unparse(
                     {
                         'scan:ScanSettings': {
-                            '@xmlns:scan': 'http:\\schemas.hp.com\imaging\escl\2011\05\03',
-                            '@xmlns:copy': 'http:\\www.hp.com\schemas\imaging\con\copy\2008\07\07',
-                            '@xmlns:dd': 'http:\\www.hp.com\schemas\imaging\con\dictionaries\1.0',
-                            '@xmlns:dd3': 'http:\\www.hp.com\schemas\imaging\con\dictionaries\2009\04\06',
-                            '@xmlns:fw': 'http:\\www.hp.com\schemas\imaging\con\firewall\2011\01\05',
-                            '@xmlns:scc': 'http:\\schemas.hp.com\imaging\escl\2011\05\03',
-                            '@xmlns:pwg': 'http:\\www.pwg.org\schemas\2010\12\sm',
+                            '@xmlns:scan': 'http://schemas.hp.com/imaging/escl/2011/05/03',
+                            '@xmlns:copy': 'http://www.hp.com/schemas/imaging/con/copy/2008/07/07',
+                            '@xmlns:dd': 'http://www.hp.com/schemas/imaging/con/dictionaries/1.0',
+                            '@xmlns:dd3': 'http://www.hp.com/schemas/imaging/con/dictionaries/2009/04/06',
+                            '@xmlns:fw': 'http://www.hp.com/schemas/imaging/con/firewall/2011/01/05',
+                            '@xmlns:scc': 'http://schemas.hp.com/imaging/escl/2011/05/03',
+                            '@xmlns:pwg': 'http://www.pwg.org/schemas/2010/12/sm',
                             'pwg:Version': '2.1',
                             'scan:Intent': 'Photo',
                             'pwg:ScanRegions': {
@@ -77,7 +77,7 @@ class HP044C0C:
                                     'pwg:YOffset': '0'
                                 }
                             },
-                            'scan:DocumentFormatExt': 'image\jpeg',
+                            'scan:DocumentFormatExt': 'image/jpeg',
                             'scan:XResolution': '600',
                             'scan:YResolution': '600',
                             'scan:ColorMode': 'RGB24',
@@ -91,32 +91,28 @@ class HP044C0C:
             req = self.request(
                 config=config
             )
-            if req == None:
-                return
+            print(req)
             config1 = {
                 "method": "get",
-                "url": f'{self.config["host"]}\eSCL\ScannerStatus'
+                "url": f'{self.config["host"]}/eSCL/ScannerStatus'
             }
             req1 = self.request(
                 config=config1
             )
-            if req1 == None:
+            if req == None:
                 return
-            data1 = req1.json()
+            data1 = req1.text
             if data1 != None and isinstance(data1, str):
-                data2 = xmltodict.parse(xml_input=data1)
+                data2 = xmltodict.parse(data1)
                 if data2 != None and isinstance(data2, dict):
-                    return [f'{self.config["host"]}\eSCL\ScanJobs\{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][i]["pwg:JobUuid"]}\NextDocument' for i in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] if "pwg:JobUuid" in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][1] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][1]["pwg:JobUuid"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][1]["pwg:JobUuid"], str)]
-                    if "scan:ScannerStatus" in data2 and data2["scan:ScannerStatus"] != None and isinstance(data2["scan:ScannerStatus"], dict) and \
-                    "scan:Jobs" in data2["scan:ScannerStatus"] and data2["scan:ScannerStatus"]["scan:Jobs"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"], dict) and \
-                    "scan:JobInfo" in data2["scan:ScannerStatus"]["scan:Jobs"] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"], list) and len(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"]) > 0 else None
+                    return data2
     def getconfigurationconstraints(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
-                "url": f'{self.config["host"]}\cdm\controlPanel\v1\configuration\constraints'
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints'
             }
             req = self.request(
                 config=config
@@ -129,7 +125,7 @@ class HP044C0C:
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
-                "url": f'{self.config["host"]}\cdm\controlPanel\v1\configuration'
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration'
             }
             req = self.request(
                 config=config
@@ -140,10 +136,13 @@ class HP044C0C:
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
-            if deviceLanguage != None and isinstance(deviceLanguage, str) and displayContrast != None and isinstance(displayContrast, int) and keyPressVolume != None and isinstance(keyPressVolume, str) and version != None and isinstance(version, str):
+            if deviceLanguage != None and isinstance(deviceLanguage, str) and \
+            displayContrast != None and isinstance(displayContrast, int) and \
+            keyPressVolume != None and isinstance(keyPressVolume, str) and \
+            version != None and isinstance(version, str):
                 config = {
                     "method": "put",
-                    "url": f'{self.config["host"]}\cdm\controlPanel\v1\configuration',
+                    "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
                     "data": json.dumps(
                         {
                             "deviceLanguage": deviceLanguage,
@@ -164,7 +163,7 @@ class HP044C0C:
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
-                "url": f'{self.config["host"]}\cdm\print\v1\printModeConfiguration'
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration'
             }
             req = self.request(
                 config=config
@@ -173,13 +172,13 @@ class HP044C0C:
                 return req.json()
     def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
         if hasattr(self, "request") and self.request != None and \
-        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        hasattr(self, "config") and self.config != None and isinsatance(self.config, dict) and \
         "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) and \
             version != None and isinstance(version, str):
                 config = {
                     "method": "put",
-                    "url": f'{self.config["host"]}\cdm\print\v1\printModeConfiguration',
+                    "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
                     "data": json.dumps(
                         obj={
                             "quietPrintModeEnabled": False,
@@ -202,7 +201,7 @@ class Scan:
         )
         self.config = {
             "headers": {
-                "User-Agent": "Mozilla\5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\537.36 (KHTML, like Gecko) Chrome\107.0.0.0 Safari\537.36 Edg\107.0.1418.52".encode("utf-8").decode("latin-1", errors="ignore")
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
             }
         }
         if hasattr(self, "rss") and self.rss != None and \
@@ -232,7 +231,7 @@ class Scan:
                 )
                 if req != None:
                     if "Content-Type" in req.headers and req.headers["Content-Type"] != None and isinstance(req.headers["Content-Type"], str):
-                        file_name = url.split("\\")[-1]
-                        file_type = data1.headers["Content-Type"].split("\")[1]
+                        file_name = url.split("/")[-1]
+                        file_type = data1.headers["Content-Type"].split("/")[1]
                         with open(file=f"{file_name}.{file_type}", mode="wb+") as f:
                             f.write(data1.content)
