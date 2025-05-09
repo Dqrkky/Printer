@@ -19,25 +19,18 @@ class HP044C0C:
         }
         if hasattr(self, "rss") and self.rss != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):  # noqa: E711
+        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):
             if username != None and isinstance(username, str) and \
-            password != None and isinstance(password, str):  # noqa: E711
-                self.config["headers"]["Authorization"] = self.makeAuthorization(
-                    username=username,
-                    password=password
-                )
+            password != None and isinstance(password, str):
+                self.config["headers"]["Authorization"] = f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
             self.rss.headers.update(self.config["headers"])
     def __repr__(self):
         # Return a string representation of the HP044C0C
         return 'HP044C0C(host: str="http://hp044c0c", username :str="admin", password :str=None)'
-    def makeAuthorization(self, username :str=None, password :str=None):
-        if username != None and isinstance(username, str) and \
-        password != None and isinstance(password, str):  # noqa: E711
-            return f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
     def request(self, config :dict=None):
         if hasattr(self, "rss") and self.rss != None and \
-        hasattr(self, "shared") and self.shared != None:  # noqa: E711
-            if config != None and isinstance(config, dict):  # noqa: E711
+        hasattr(self, "shared") and self.shared != None:
+            if config != None and isinstance(config, dict):
                 req = self.rss.request(
                     *self.shared.convert_json_to_values(
                         config=config
@@ -47,7 +40,7 @@ class HP044C0C:
     def authcheck(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
                 "url": f'{self.config["host"]}/AuthChk'
@@ -55,12 +48,12 @@ class HP044C0C:
             req = self.request(
                 config=config
             )
-            if req != None:  # noqa: E711
+            if req != None:
                 return req.json()
     def scan(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "post",
                 "url": f'{self.config["host"]}/eSCL/ScanJobs',
@@ -106,17 +99,17 @@ class HP044C0C:
             req1 = self.request(
                 config=config1
             )
-            if req == None:  # noqa: E711
+            if req == None:
                 return
             data1 = req1.text
-            if data1 != None and isinstance(data1, str):  # noqa: E711
+            if data1 != None and isinstance(data1, str):
                 data2 = xmltodict.parse(data1)
-                if data2 != None and isinstance(data2, dict):  # noqa: E711
+                if data2 != None and isinstance(data2, dict):
                     return data2
     def getconfigurationconstraints(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
                 "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints'
@@ -124,12 +117,12 @@ class HP044C0C:
             req = self.request(
                 config=config
             )
-            if req != None:  # noqa: E711
+            if req != None:
                 return req.json()
     def getconfiguration(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
                 "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration'
@@ -137,33 +130,37 @@ class HP044C0C:
             req = self.request(
                 config=config
             )
-            if req != None:  # noqa: E711
+            if req != None:
                 return req.json()
     def setconfiguration(self, deviceLanguage :str=None, displayContrast :int=None, keyPressVolume :str=None, version :str=None):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
-            config = {
-                "method": "put",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                "data": json.dumps(
-                    {
-                        **({"deviceLanguage": deviceLanguage} if deviceLanguage != None and isinstance(deviceLanguage, str) else {}),  # noqa: E711
-                        **({"displayContrast": displayContrast} if displayContrast != None and isinstance(displayContrast, int) else {}),  # noqa: E711
-                        **({"keyPressVolume": keyPressVolume} if keyPressVolume != None and isinstance(keyPressVolume, str) else {}),  # noqa: E711
-                        **({"version": version} if version != None and isinstance(version, str) else {}),  # noqa: E711
-                    }
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
+            if deviceLanguage != None and isinstance(deviceLanguage, str) and \
+            displayContrast != None and isinstance(displayContrast, int) and \
+            keyPressVolume != None and isinstance(keyPressVolume, str) and \
+            version != None and isinstance(version, str):
+                config = {
+                    "method": "put",
+                    "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                    "data": json.dumps(
+                        {
+                            "deviceLanguage": deviceLanguage,
+                            "displayContrast": displayContrast,
+                            "keyPressVolume": keyPressVolume,
+                            "version": version
+                        }
+                    )
+                }
+                req = self.request(
+                    config=config
                 )
-            }
-            req = self.request(
-                config=config
-            )
-            if req != None:  # noqa: E711
-                return req.json()
+                if req != None:
+                    return req.json()
     def getprintmodeconfiguration(self):
         if hasattr(self, "request") and self.request != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
             config = {
                 "method": "get",
                 "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration'
@@ -171,27 +168,29 @@ class HP044C0C:
             req = self.request(
                 config=config
             )
-            if req != None:  # noqa: E711
+            if req != None:
                 return req.json()
     def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
         if hasattr(self, "request") and self.request != None and \
-        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
-            config = {
-                "method": "put",
-                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                "data": json.dumps(
-                    obj={
-                        **({"quietPrintModeEnabled": quietPrintModeEnabled} if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) else {}),  # noqa: E711
-                        **({"version": version} if version != None and isinstance(version, str) else {})  # noqa: E711
-                    }
+        hasattr(self, "config") and self.config != None and isinsatance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):
+            if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) and \
+            version != None and isinstance(version, str):
+                config = {
+                    "method": "put",
+                    "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                    "data": json.dumps(
+                        obj={
+                            "quietPrintModeEnabled": False,
+                            "version": version
+                        }
+                    )
+                }
+                req = self.request(
+                    config=config
                 )
-            }
-            req = self.request(
-                config=config
-            )
-            if req != None:  # noqa: E711
-                return req.json()
+                if req != None:
+                    return req.json()
 
 class Scan:
     def __init__(self):
@@ -207,12 +206,12 @@ class Scan:
         }
         if hasattr(self, "rss") and self.rss != None and \
         hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
-        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):  # noqa: E711
+        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):
             self.rss.headers.update(self.config["headers"])
     def request(self, config :dict=None):
         if hasattr(self, "rss") and self.rss != None and \
-        hasattr(self, "shared") and self.shared != None:  # noqa: E711
-            if config != None and isinstance(config, dict):  # noqa: E711
+        hasattr(self, "shared") and self.shared != None:
+            if config != None and isinstance(config, dict):
                 req = self.rss.request(
                     *self.shared.convert_json_to_values(
                         config=config
@@ -221,18 +220,18 @@ class Scan:
                 if req.status_code == 200:
                     return req
     def save(self, url :str=None):
-        if hasattr(self, "request") and self.request != None:  # noqa: E711
-            if url != None and isinstance(url, str):  # noqa: E711
+        if hasattr(self, "request") and self.request != None:
+            if url != None and isinstance(url, str):
                 config = {
                     "method": "get",
                     "url": url
                 }
-                req = self.request(
+                req = seld.request(
                     config=config
                 )
-                if req != None:  # noqa: E711
-                    if "Content-Type" in req.headers and req.headers["Content-Type"] != None and isinstance(req.headers["Content-Type"], str):  # noqa: E711
+                if req != None:
+                    if "Content-Type" in req.headers and req.headers["Content-Type"] != None and isinstance(req.headers["Content-Type"], str):
                         file_name = url.split("/")[-1]
-                        file_type = req.headers["Content-Type"].split("/")[1]
+                        file_type = data1.headers["Content-Type"].split("/")[1]
                         with open(file=f"{file_name}.{file_type}", mode="wb+") as f:
-                            f.write(req.content)
+                            f.write(data1.content)
