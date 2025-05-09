@@ -1,8 +1,8 @@
-import Printer
+import printer
 import json
 
-hpenvy6020e = Printer.HP044C0C()
-scann = Printer.Scan()
+hpenvy6020e = printer.HP044C0C()
+scann = printer.Scan()
 print(
     json.dumps(
         obj={
