@@ -1,77 +1,67 @@
-import requests, json, xmltodict, base64
-
-def req(js0n: dict=None, r=None):
-    if js0n != None and isinstance(js0n, dict) and len(js0n) > 0:
-        if "r" in js0n and js0n["r"] != None:
-            r_ = js0n["r"]
-        else:
-            if r != None:
-                r_ = r
-            else:
-                r_ = None
-        if "method" in js0n and js0n["method"] != None:
-            method_ = js0n["method"]
-        else:
-            method_ = None
-        if "url" in js0n and js0n["url"] != None:
-            url_ = js0n["url"]
-        else:
-            url_ = None
-        if "params" in js0n and js0n["params"] != None:
-            params_ = js0n["params"]
-        else:
-            params_ = None
-        if "data" in js0n and js0n["data"] != None:
-            data_ = js0n["data"]
-        else:
-            data_ = None
-        if "headers" in js0n and js0n["headers"] != None:
-            headers_ = js0n["headers"]
-        else:
-            headers_ = None
-        if "aftermethod" in js0n and js0n["aftermethod"] != None:
-            aftermethod_ = js0n["aftermethod"]
-        else:
-            aftermethod_ = None
-        if r_ != None and method_ != None and url_ != None and aftermethod_ != None:
-            re = r_.request(
-                method=method_,
-                url=url_,
-                params=params_,
-                data=data_,
-                headers=headers_
-            )
-            if aftermethod_ == "text":
-                data_out = re.text
-            elif aftermethod_ == "json":
-                data_out = re.json()
-            elif aftermethod_ == "content":
-                data_out = re.content
-            elif aftermethod_ == "re":
-                data_out = re
-            else:
-                data_out = None
-            return data_out
+import requests
+import json
+import xmltodict
+import base64
+import shared
 
 class HP044C0C:
     def __init__(self, host: str="http://hp044c0c", username :str="admin", password :str=None):
         with requests.Session() as rss:
             self.rss = rss
-        self.rss.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52"
+        self.shared = shared.Shared(
+            rss=self.rss
+        )
         self.config = {
             "host": host,
             "headers": {
-                "Authorization": None
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240" 
             }
         }
-        if username != None and isinstance(username, str) and password != None and isinstance(password, str):
-            self.config["headers"]["Authorization"] = f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
+        if hasattr(self, "rss") and self.rss != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):  # noqa: E711
+            if username != None and isinstance(username, str) and \
+            password != None and isinstance(password, str):  # noqa: E711
+                self.config["headers"]["Authorization"] = self.makeAuthorization(
+                    username=username,
+                    password=password
+                )
+            self.rss.headers.update(self.config["headers"])
+    def __repr__(self):
+        # Return a string representation of the HP044C0C
+        return 'HP044C0C(host: str="http://hp044c0c", username :str="admin", password :str=None)'
+    def makeAuthorization(self, username :str=None, password :str=None):
+        if username != None and isinstance(username, str) and \
+        password != None and isinstance(password, str):  # noqa: E711
+            return f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
+    def request(self, config :dict=None):
+        if hasattr(self, "rss") and self.rss != None and \
+        hasattr(self, "shared") and self.shared != None:  # noqa: E711
+            if config != None and isinstance(config, dict):  # noqa: E711
+                req = self.rss.request(
+                    *self.shared.convert_json_to_values(
+                        config=config
+                    )
+                )
+                return req
     def authcheck(self):
-        #https://192.168.1.3/AuthChk
-        pass
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
+                "method": "get",
+                "url": f'{self.config["host"]}/AuthChk'
+            }
+            req = self.request(
+                config=config
+            )
+            if req != None:  # noqa: E711
+                return req.json()
     def scan(self):
-        req(
-            js0n={
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
                 "method": "post",
                 "url": f'{self.config["host"]}/eSCL/ScanJobs',
                 "data": xmltodict.unparse(
@@ -79,7 +69,7 @@ class HP044C0C:
                         'scan:ScanSettings': {
                             '@xmlns:scan': 'http://schemas.hp.com/imaging/escl/2011/05/03',
                             '@xmlns:copy': 'http://www.hp.com/schemas/imaging/con/copy/2008/07/07',
-                            '@xmlns:dd': 'http://www.hp.com/schemas/imaging/con/dictionaries/1.0/',
+                            '@xmlns:dd': 'http://www.hp.com/schemas/imaging/con/dictionaries/1.0',
                             '@xmlns:dd3': 'http://www.hp.com/schemas/imaging/con/dictionaries/2009/04/06',
                             '@xmlns:fw': 'http://www.hp.com/schemas/imaging/con/firewall/2011/01/05',
                             '@xmlns:scc': 'http://schemas.hp.com/imaging/escl/2011/05/03',
@@ -103,118 +93,146 @@ class HP044C0C:
                             'scan:Contrast': '1000'
                         }
                     }
-                ),
-                "aftermethod": "re"
-            },
-            r=self.rss
-        )
-        data1 = req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/eSCL/ScannerStatus',
-                "aftermethod": "text"
-            },
-            r=self.rss
-        )
-        if data1 != None and isinstance(data1, str):
-            data2 = xmltodict.parse(xml_input=data1)
-            if data2 != None and isinstance(data2, dict):
-                if "scan:ScannerStatus" in data2 and data2["scan:ScannerStatus"] != None and isinstance(data2["scan:ScannerStatus"], dict) and "scan:Jobs" in data2["scan:ScannerStatus"] and data2["scan:ScannerStatus"]["scan:Jobs"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"], dict) and "scan:JobInfo" in data2["scan:ScannerStatus"]["scan:Jobs"] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"], list) and len(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"]) > 0 and "pwg:JobUuid" in data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0] and data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"] != None and isinstance(data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"], str):
-                    return f'{self.config["host"]}/eSCL/ScanJobs/{data2["scan:ScannerStatus"]["scan:Jobs"]["scan:JobInfo"][0]["pwg:JobUuid"]}/NextDocument'
-    def getconfigurationconstraints(self):
-        #needs fixing (filter data and put em in order)
-        data = req(
-            js0n={
-                "method": "get",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
-        if data != None and isinstance(data, dict):
-            dummy = {
-                "version": None,
-                "validators": None
+                )
             }
-            if "version" in data and data["version"] != None and isinstance(data["version"], str):
-                dummy["version"] = data["version"]
-            if "validators" in data and data["validators"] != None and isinstance(data["validators"], list) and len(data["validators"]):
-                dummy["validators"] = [{b: validator[b][1:] if validator[b] != None and isinstance(validator[b], str) and validator[b].startswith("/") else validator[b] for b in validator} for validator in data["validators"] if validator != None and isinstance(validator, dict)]
-            return dummy
+            req = self.request(
+                config=config
+            )
+            print(req)
+            config1 = {
+                "method": "get",
+                "url": f'{self.config["host"]}/eSCL/ScannerStatus'
+            }
+            req1 = self.request(
+                config=config1
+            )
+            if req == None:  # noqa: E711
+                return
+            data1 = req1.text
+            if data1 != None and isinstance(data1, str):  # noqa: E711
+                data2 = xmltodict.parse(data1)
+                if data2 != None and isinstance(data2, dict):  # noqa: E711
+                    return data2
+    def getconfigurationconstraints(self):
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
+                "method": "get",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration/constraints'
+            }
+            req = self.request(
+                config=config
+            )
+            if req != None:  # noqa: E711
+                return req.json()
     def getconfiguration(self):
-        return req(
-            js0n={
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
                 "method": "get",
-                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration'
+            }
+            req = self.request(
+                config=config
+            )
+            if req != None:  # noqa: E711
+                return req.json()
     def setconfiguration(self, deviceLanguage :str=None, displayContrast :int=None, keyPressVolume :str=None, version :str=None):
-        #need fixing (check for valid parameters)
-        if deviceLanguage != None and isinstance(deviceLanguage, str) and displayContrast != None and isinstance(displayContrast, int) and keyPressVolume != None and isinstance(keyPressVolume, str) and version != None and isinstance(version, str):
-            data = req(
-                js0n={
-                    "method": "put",
-                    "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
-                    "data": json.dumps(
-                        {
-                            "deviceLanguage": deviceLanguage,
-                            "displayContrast": displayContrast,
-                            "keyPressVolume": keyPressVolume,
-                            "version": version
-                        }
-                    ),
-                    "aftermethod": "re"
-                },
-                r=self.rss
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/controlPanel/v1/configuration',
+                "data": json.dumps(
+                    {
+                        **({"deviceLanguage": deviceLanguage} if deviceLanguage != None and isinstance(deviceLanguage, str) else {}),  # noqa: E711
+                        **({"displayContrast": displayContrast} if displayContrast != None and isinstance(displayContrast, int) else {}),  # noqa: E711
+                        **({"keyPressVolume": keyPressVolume} if keyPressVolume != None and isinstance(keyPressVolume, str) else {}),  # noqa: E711
+                        **({"version": version} if version != None and isinstance(version, str) else {}),  # noqa: E711
+                    }
+                )
+            }
+            req = self.request(
+                config=config
             )
-            return data.status_code
+            if req != None:  # noqa: E711
+                return req.json()
     def getprintmodeconfiguration(self):
-        return req(
-            js0n={
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
                 "method": "get",
-                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                "aftermethod": "json"
-            },
-            r=self.rss
-        )
-    def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
-        #need fixing (check for valid parameters)
-        if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) and version != None and isinstance(version, str):
-            data = req(
-                js0n={
-                    "method": "put",
-                    "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
-                    "data": json.dumps(
-                        obj={
-                            "quietPrintModeEnabled": False,
-                            "version": version
-                        }
-                    ),
-                        "aftermethod": "re"
-                },
-                r=self.rss
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration'
+            }
+            req = self.request(
+                config=config
             )
-            return data.status_code
+            if req != None:  # noqa: E711
+                return req.json()
+    def setprintmodeconfiguration(self, quietPrintModeEnabled :bool=False, version :str=None):
+        if hasattr(self, "request") and self.request != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "host" in self.config and self.config["host"] != None and isinstance(self.config["host"], str):  # noqa: E711
+            config = {
+                "method": "put",
+                "url": f'{self.config["host"]}/cdm/print/v1/printModeConfiguration',
+                "data": json.dumps(
+                    obj={
+                        **({"quietPrintModeEnabled": quietPrintModeEnabled} if quietPrintModeEnabled != None and isinstance(quietPrintModeEnabled, bool) else {}),  # noqa: E711
+                        **({"version": version} if version != None and isinstance(version, str) else {})  # noqa: E711
+                    }
+                )
+            }
+            req = self.request(
+                config=config
+            )
+            if req != None:  # noqa: E711
+                return req.json()
 
 class Scan:
     def __init__(self):
         with requests.Session() as rss:
             self.rss = rss
-        self.rss.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.52"
+        self.shared = shared.Shared(
+            rss=self.rss
+        )
+        self.config = {
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240"
+            }
+        }
+        if hasattr(self, "rss") and self.rss != None and \
+        hasattr(self, "config") and self.config != None and isinstance(self.config, dict) and \
+        "headers" in self.config and self.config["headers"] != None and isinstance(self.config["headers"], dict):  # noqa: E711
+            self.rss.headers.update(self.config["headers"])
+    def request(self, config :dict=None):
+        if hasattr(self, "rss") and self.rss != None and \
+        hasattr(self, "shared") and self.shared != None:  # noqa: E711
+            if config != None and isinstance(config, dict):  # noqa: E711
+                req = self.rss.request(
+                    *self.shared.convert_json_to_values(
+                        config=config
+                    )
+                )
+                if req.status_code == 200:
+                    return req
     def save(self, url :str=None):
-        if url != None and isinstance(url, str):
-            data1 = req(
-                js0n={
+        if hasattr(self, "request") and self.request != None:  # noqa: E711
+            if url != None and isinstance(url, str):  # noqa: E711
+                config = {
                     "method": "get",
-                    "url": url,
-                    "aftermethod": "re"
-                },
-                r=self.rss
-            )
-            if data1 != None and "Content-Type" in data1.headers and data1.headers["Content-Type"] != None and isinstance(data1.headers["Content-Type"], str):
-                file_name = url.split("/")[-1]
-                file_type = data1.headers["Content-Type"].split("/")[1]
-                with open(file=f"{file_name}.{file_type}", mode="wb+") as f:
-                    f.write(data1.content)
+                    "url": url
+                }
+                req = self.request(
+                    config=config
+                )
+                if req != None:  # noqa: E711
+                    if "Content-Type" in req.headers and req.headers["Content-Type"] != None and isinstance(req.headers["Content-Type"], str):  # noqa: E711
+                        file_name = url.split("/")[-1]
+                        file_type = req.headers["Content-Type"].split("/")[1]
+                        with open(file=f"{file_name}.{file_type}", mode="wb+") as f:
+                            f.write(req.content)
